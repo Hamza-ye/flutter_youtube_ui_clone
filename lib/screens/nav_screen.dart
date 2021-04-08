@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_youtube_ui_clone/data.dart';
 import 'package:flutter_youtube_ui_clone/screens/home_screen.dart';
+import 'package:miniplayer/miniplayer.dart';
+
+final selectedVideoProvider = StateProvider<Video?>((ref) => null);
 
 class NavScreen extends StatefulWidget {
   @override
@@ -7,6 +12,7 @@ class NavScreen extends StatefulWidget {
 }
 
 class _NavScreenState extends State<NavScreen> {
+  final double _playerMinHight = 60.0;
   int _selectedIndex = 0;
 
   final _screens = [
@@ -36,17 +42,38 @@ class _NavScreenState extends State<NavScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: _screens
-            .asMap()
-            .map((i, screen) => MapEntry(
-                i,
-                Offstage(
-                  offstage: _selectedIndex != i,
-                  child: screen,
-                )))
-            .values
-            .toList(),
+      body: Consumer(
+        builder: (context, watch, child) {
+          final selectedVideo = watch(selectedVideoProvider).state;
+          return Stack(
+            children: _screens
+                .asMap()
+                .map((i, screen) => MapEntry(
+                    i,
+                    Offstage(
+                      offstage: _selectedIndex != i,
+                      child: screen,
+                    )))
+                .values
+                .toList()
+                  ..add(Offstage(
+                    offstage: selectedVideo == null,
+                    child: Miniplayer(
+                      minHeight: _playerMinHight,
+                      maxHeight: MediaQuery.of(context).size.height,
+                      builder: (height, percentage) {
+                        return Container(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          child: Center(
+                            child: Text(
+                                '${height} ${percentage} . ${selectedVideo!.title}'),
+                          ),
+                        );
+                      },
+                    ),
+                  )),
+          );
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
