@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_youtube_ui_clone/data.dart';
 import 'package:flutter_youtube_ui_clone/screens/nav_screen.dart';
+import 'package:miniplayer/miniplayer.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +14,10 @@ class VideoCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         context.read(selectedVideoProvider).state = video;
+        context
+            .read(miniPlayerControllerProvider)
+            .state
+            .animateToHeight(state: PanelState.MAX);
       },
       child: Column(
         children: [
@@ -74,7 +79,7 @@ class VideoCard extends StatelessWidget {
                       ),
                       Flexible(
                         child: Text(
-                          '${video.author.username} * ${video.viewCount} views * ${timeago.format(video.timestamp)}',
+                          '${video.author.username} . ${video.viewCount} views . ${timeago.format(video.timestamp)}',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context)

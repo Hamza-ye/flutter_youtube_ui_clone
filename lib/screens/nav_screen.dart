@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_youtube_ui_clone/data.dart';
 import 'package:flutter_youtube_ui_clone/screens/home_screen.dart';
+import 'package:flutter_youtube_ui_clone/screens/video_screen.dart';
 import 'package:miniplayer/miniplayer.dart';
 
 final selectedVideoProvider = StateProvider<Video?>((ref) => null);
+final miniPlayerControllerProvider =
+    StateProvider<MiniplayerController>((ref) => MiniplayerController());
 
 class NavScreen extends StatefulWidget {
   @override
@@ -45,6 +48,8 @@ class _NavScreenState extends State<NavScreen> {
       body: Consumer(
         builder: (context, watch, child) {
           final selectedVideo = watch(selectedVideoProvider).state;
+          final miniPlayerController =
+              watch(miniPlayerControllerProvider).state;
           return Stack(
             children: _screens
                 .asMap()
@@ -59,16 +64,84 @@ class _NavScreenState extends State<NavScreen> {
                   ..add(Offstage(
                     offstage: selectedVideo == null,
                     child: Miniplayer(
+                      controller: miniPlayerController,
                       minHeight: _playerMinHight,
                       maxHeight: MediaQuery.of(context).size.height,
                       builder: (height, percentage) {
-                        return Container(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          child: Center(
-                            child: Text(
-                                '${height} ${percentage} . ${selectedVideo!.title}'),
-                          ),
-                        );
+                        if (selectedVideo == null) return SizedBox.shrink();
+                        if (height <= _playerMinHight + 50.0)
+                          return Container(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Image.network(
+                                      selectedVideo.thumbnailUrl,
+                                      height: _playerMinHight - 4.0,
+                                      width: 120.0,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                selectedVideo.title,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .caption!
+                                                    .copyWith(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                              ),
+                                            ),
+                                            Flexible(
+                                              child: Text(
+                                                selectedVideo.author.username,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .caption!
+                                                    .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.play_arrow),
+                                      onPressed: () {},
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.close),
+                                      onPressed: () {
+                                        context
+                                            .read(selectedVideoProvider)
+                                            .state = null;
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                LinearProgressIndicator(
+                                  value: 0.4,
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.red),
+                                )
+                              ],
+                            ),
+                          );
+                        return VideoScreen();
                       },
                     ),
                   )),
