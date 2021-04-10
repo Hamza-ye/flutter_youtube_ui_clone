@@ -69,7 +69,7 @@ class _NavScreenState extends State<NavScreen> {
                       maxHeight: MediaQuery.of(context).size.height,
                       builder: (height, percentage) {
                         if (selectedVideo == null) return SizedBox.shrink();
-                        if (height <= _playerMinHight + 50.0)
+                        if (height <= _playerMinHight + 220.0)
                           return Container(
                             color: Theme.of(context).scaffoldBackgroundColor,
                             child: Column(
@@ -153,7 +153,13 @@ class _NavScreenState extends State<NavScreen> {
         selectedFontSize: 10.0,
         unselectedFontSize: 10.0,
         currentIndex: _selectedIndex,
-        onTap: (i) => setState(() => _selectedIndex = i),
+        onTap: (i) => setState(() {
+          _selectedIndex = i;
+          context
+              .read(miniPlayerControllerProvider)
+              .state
+              .animateToHeight(state: PanelState.MIN);
+        }),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
